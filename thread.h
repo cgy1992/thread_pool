@@ -12,6 +12,13 @@ enum ThreadState
     TS_TERMINATE
 };
 
+enum SchedPriority
+{
+    SP_OTHER = SCHED_OTHER,
+    SP_FIFO = SCHED_FIFO,
+    SP_RR = SCHED_RR
+};
+
 class Thread
 {
 public:
@@ -23,7 +30,7 @@ public:
     bool Detach();
     
     bool Start();
-    static void Sleep(int micro_seconds);
+    static void Sleep(int usec);
     bool Wakeup();
     
     bool Yield();
@@ -40,8 +47,8 @@ public:
     pthread_t thread_id() const { return thread_id_; }
     static pthread_t ThreadSelf();
 
-    bool set_priority(int priority);
-    int priority() const { return priority_; }
+    bool set_sched_priority(SchedPriority sched_priority);
+    SchedPriority sched_priority() const { return sched_priority_; }
 
     void set_thread_state(ThreadState state) { thread_state_ = state;}
     void set_errno(int errno) { errno_ = errno; }
@@ -50,11 +57,12 @@ public:
 private:
     bool running_;
     bool create_suspended_;
-    bool detachd_;
+    bool detached_;
     ThreadState thread_state_;
     int errno_;
-    int priority_;
+    SchedPriority sched_priority_;
     pthread_t thread_id_;
+    pthread_attr_t thread_attr_;
     std::string thread_name_;
 };
 
