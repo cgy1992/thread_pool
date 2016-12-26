@@ -15,26 +15,14 @@ static void* ThreadProc(void* arg)
     return NULL;
 }
 
-Thread::Thread() :
+Thread::Thread(bool detach) :
     running_(false),
-    create_suspended_(false),
-    detached_(false),
-    thread_state_(TS_FREE),
-    errno_(0),
-    sched_priority_(SP_OTHER),
-    thread_id_(-1)    
-{
-    
-}
-
-Thread::Thread(bool suspend, bool detach) :
-    running_(false),
-    create_suspended_(suspend),
     detached_(detach),
-    thread_state_(TS_FREE),
+    thread_state_(TS_IDLE),
     errno_(0),
-    sched_priority_(SP_OTHER),
-    thread_id_(-1)    
+    thread_id_(-1)    ,
+    mutex_(),
+    cond_(mutex_)
 {
     
 }
@@ -58,22 +46,12 @@ bool Thread::Start()
 {
     running_ = true;
     
-    // 默认优先级是 SCHED_OTHER, 现在要提高线程的优先级， 提高成SCHED_RR
     pthread_attr_init(&thread_attr_);
-    struct sched_param param;
-    param.sched_priority = 51;
     
     if (detached_)
     {
         errno_ = pthread_attr_setdetachstate(&thread_attr_, PTHREAD_CREATE_DETACHED);
         detached_ = errno_ == 0;
-    }
-    
-    if (sched_priority_ != SP_OTHER) 
-    {
-        errno_ = pthread_attr_setschedpolicy(&thread_attr_, SCHED_RR);
-        errno_ = pthread_attr_setschedparam(&thread_attr_, &param);                 
-        errno_ = pthread_attr_setinheritsched(&thread_attr_, PTHREAD_EXPLICIT_SCHED);                
     }
     
     if (( errno_ = pthread_create(&thread_id_, &thread_attr_, ThreadProc, this)) != 0)
@@ -89,11 +67,6 @@ void Thread::Sleep(int usec)
     usleep(usec);
 }
 
-bool Thread::Wakeup()
-{
-    
-}
-
 bool Thread::Yield()
 {
     errno_ = pthread_yield();
@@ -106,12 +79,19 @@ bool Thread::Join()
     return errno_ == 0;
 }
 
-bool Thread::Terminate()
+bool Thread::Resume()
 {
-    
+    cond_.Notify();
+    return true;
 }
 
-void Thread::Exit()
+bool Thread::Suspend()
 {
+    if (thread_state_ == TS_BUSY || thread_state_ == TS_SUSPEND || thread_state_ == TS_TERMINATE)
+        return false;
     
+    while (thread_state_!= TS_IDLE)
+        cond_.Wait();
+    
+    return true;
 }
