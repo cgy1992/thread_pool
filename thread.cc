@@ -11,6 +11,7 @@ static void* ThreadProc(void* arg)
 {
     Thread* thread =reinterpret_cast<Thread*>(arg);
     assert(thread != NULL);
+    thread->set_thread_state(TS_BUSY);
     thread->Run();
     return NULL;
 }
@@ -65,6 +66,13 @@ bool Thread::Start()
 void Thread::Sleep(int usec)
 {
     usleep(usec);
+}
+
+void Thread::Terminate()
+{
+    Stop();
+    Resume();
+    Join();
 }
 
 bool Thread::Yield()

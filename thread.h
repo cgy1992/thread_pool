@@ -26,6 +26,8 @@ public:
     
     bool Start();
     static void Sleep(int usec);
+    void Stop() { running_ = false; }
+    void Terminate();
     
     bool Yield();
     bool Join();
