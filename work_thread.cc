@@ -1,7 +1,11 @@
 #include "work_thread.h"
 #include "thread_pool.h"
+#include "job.h"
+
+#include <assert.h>
 
 WorkThread::WorkThread(ThreadPool* pool) : 
+    job_(NULL),
    pool_(pool)
 {
     
@@ -16,19 +20,13 @@ void WorkThread::Run()
 {
     while (running_)
     {
-        switch(thread_state_)
-        {
-        case TS_IDLE:
-            // 在idle 条件下等待, 返回
-            break;
-        case TS_BUSY:
-            break;
-        case TS_SUSPEND:
-            break;
-        case TS_TERMINATE:
-            break;
-        default:
-            break;
-        }
+        thread_state_ = TS_BUSY;   
+        assert(job_ != NULL);
+        job_->DoJob(NULL);
+        delete job_;
+        job_ = NULL;
+        thread_state_ = TS_IDLE;
+        pool_->AddIdleThread(this);
+        Suspend();
     }
 }

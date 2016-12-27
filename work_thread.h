@@ -2,9 +2,8 @@
 #define WORK_THREAD_H_
 
 #include "thread.h"
-#include "mutex.h"
-#include "condition.h"
 
+class Job;
 class ThreadPool;
 
 class WorkThread : public Thread 
@@ -14,10 +13,11 @@ public:
     virtual ~WorkThread();
     virtual void Run();
     
-private:
-    ThreadPool* pool_;
-
+    void set_job(Job* job) { job_ = job; }
     
+private:
+    Job* job_;
+    ThreadPool* pool_;
 };
 
 #endif
