@@ -15,6 +15,7 @@ public:
     explicit ThreadPool(size_t size);
     ~ThreadPool();
     Thread* GetIdleThread();
+    void AddIdleThread(Thread* thread);
     
     void Increase(size_t size);
     void Decrease(size_t size);
