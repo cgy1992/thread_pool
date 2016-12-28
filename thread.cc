@@ -89,12 +89,17 @@ bool Thread::Join()
 
 bool Thread::Resume()
 {
+    {
+        MutexGuard guard(mutex_);
+        thread_state_ = TS_BUSY;
+    }
     cond_.Notify();
     return true;
 }
 
 bool Thread::Suspend()
 {
+    MutexGuard guard(mutex_);
     if (thread_state_ == TS_BUSY || thread_state_ == TS_SUSPEND || thread_state_ == TS_TERMINATE)
         return false;
     

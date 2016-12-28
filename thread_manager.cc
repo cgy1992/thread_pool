@@ -3,7 +3,8 @@
 #include "job_manager.h"
 #include <assert.h>
 
-ThreadManager::ThreadManager(size_t size) :
+ThreadManager::ThreadManager(size_t size, size_t incr_size) :
+    incr_size_(incr_size),
     running_(false),
     job_manager_(NULL),
     thread_pool_(NULL)
@@ -37,7 +38,7 @@ void ThreadManager::Run()
             continue;
         }
         
-        // TODO 根据相应的算法，决定什么时候扩容
+        
         Thread* thread = thread_pool_->GetIdleThread();
         if (thread == NULL)
         {
@@ -50,6 +51,14 @@ void ThreadManager::Run()
         work_thread->set_job(job);
         work_thread->set_thread_state(TS_BUSY);
         work_thread->Resume();
+    }
+}
+
+void ThreadManager::AddJob(Job *job)
+{
+    if (job != NULL)
+    {
+        job_manager_->AddJob(job);
     }
 }
 

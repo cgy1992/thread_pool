@@ -22,7 +22,7 @@ void WorkThread::Run()
     {
         thread_state_ = TS_BUSY;   
         assert(job_ != NULL);
-        job_->DoJob(NULL);
+        job_->DoJob();
         delete job_;
         job_ = NULL;
         thread_state_ = TS_IDLE;
