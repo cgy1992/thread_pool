@@ -41,12 +41,26 @@ include_directories(.)
 
 aux_source_directory(. SOURCES_DIR)
 
-set(SOURCES_FILE ${SOURCES_DIR})
+set(SOURCES_FILE 
+	condition.cc
+	job.cc
+	job_manager.cc
+	mutex.cc
+	thread.cc
+	thread_manager.cc
+	thread_pool.cc
+	work_thread.cc
+)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 add_library(ptp ${SOURCES_FILE})
-#TARGET_LINK_LIBRARIES(${TARGET} pthread rt)
+target_link_libraries(ptp pthread rt)
+
+
+add_executable(thread_pool_test thread_pool_test.cc)
+target_link_libraries(thread_pool_test ptp)
+
 
 
 
